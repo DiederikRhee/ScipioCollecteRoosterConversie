@@ -50,13 +50,11 @@ def collectesPerDagNaarDataframe(data: list[CollectesPerDag]) -> pd.DataFrame:
 def bepaalCollectes2025():
     churchesHeaders = [f"{church}_{i}" for church in kerken for i in range(1, 4)]
     xls = pd.ExcelFile(r"input/Collecterooster_PGK_2026___Definitief_12-11-2025.xlsx")
-    df = xls.parse(sheet_name="Collectes 2026 A4 per kerk", index_col=0, skiprows=2, nrows=82, names=["Datum", "Bijzonderheden"] + churchesHeaders)
+    df = xls.parse(sheet_name="Collectes 2026 A4 per kerk", index_col=0, skiprows=1, nrows=83, names=["Datum", "Bijzonderheden"] + churchesHeaders)
     df.index  = df.index.to_series().ffill()
     df.replace("K&E", "Kerk en Eredienst", inplace=True)
     df.replace("Wel samenkomst, geen collecte", np.nan, inplace=True)
     df.dropna(inplace=True, how="all", subset=churchesHeaders)
-
-    results: List[tuple[str, pd.DataFrame]] = []
 
     for kerk in kerken:
         churchHeaders = [f"{kerk}_{i}" for i in range(1, 4)]
