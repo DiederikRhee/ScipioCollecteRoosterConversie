@@ -35,11 +35,9 @@ def collectes_per_dag_naar_scipio_csv(inputBestand: Path, outputBestand: Path):
         collecte = input_df.iloc[i]
         looptijd = looptijden[i]
 
-        collecteItems = [index for index in collecte.index if "Collecte" in index]
+        collecteItems = [index for index in collecte.index if "Collecte" in index and not pd.isna(collecte[index])]
         for collecteItem in collecteItems:
             doel = collecte[collecteItem]
-            if pd.isna(doel):
-                continue
 
             tot = looptijd.Tot - datetime.timedelta(minutes= (len(collecteItems) - collecteItems.index(collecteItem) - 1))
 
