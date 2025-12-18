@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 from typing import List
-from helpers import kerken
+from helpers import kerken, BepaalOutputBestandCollectPerDag
 
 @dataclass
 class CollecteItem:
@@ -47,7 +47,7 @@ def collectesPerDagNaarDataframe(data: list[CollectesPerDag]) -> pd.DataFrame:
 
     return pd.DataFrame(rows)
 
-def bepaalCollectes2025() -> List[tuple[str, pd.DataFrame]]:
+def bepaalCollectes2025():
     churchesHeaders = [f"{church}_{i}" for church in kerken for i in range(1, 4)]
     xls = pd.ExcelFile(r"input/Collecterooster_PGK_2026___Definitief_12-11-2025.xlsx")
     df = xls.parse(sheet_name="Collectes 2026 A4 per kerk", index_col=0, skiprows=2, nrows=82, names=["Datum", "Bijzonderheden"] + churchesHeaders)
@@ -104,16 +104,11 @@ def bepaalCollectes2025() -> List[tuple[str, pd.DataFrame]]:
                             for newItem in newItems:
                                 collectionPerDay.collectes.append(newItem)
             collections.append(collectionPerDay)
-        results.append((kerk, collectesPerDagNaarDataframe(collections)))
-    return results
+        df_resultaat = collectesPerDagNaarDataframe(collections)
+        df_resultaat.to_excel(BepaalOutputBestandCollectPerDag(kerk), index=False)
 
 
 if __name__ == "__main__":
-    results = bepaalCollectes2025()
-
-    from helpers import BepaalOutputBestandCollectPerDag
-
-    for kerk, df in results:
-        df.to_excel(BepaalOutputBestandCollectPerDag(kerk), index=False)
+    bepaalCollectes2025()
 
     
