@@ -17,7 +17,7 @@ Dit stuk code maakt een Scipio csv bestand. Als input leest hij de excel in van 
 1. In principe begint de collecte twee dagen voor de dag van de viering (dus op vrijdagochtend 00.00 voor een viering op zondag)
 2. In principe eindigt de collecte vier dagen na de dag van de viering (dus op donderdagavond 23.59 voor een viering op zondag)
 3. Er worden altijd alleen maar de collectes weergegeven van 1 viering. Dus bij vieringen korter op elkaar dan 1 week, worden de bovenstaande start/eind tijden aangepast
-
+4. T.b.v. correcte volgorde in de Scipio app, wordt de eindtijd iets aangepast. De volgorde van alle zichtbare collectes in de app is immers op chronologische volgorde van de eindtijd. Dus collecte 1 wordt op 23:57 gezet, collecte 2 op 23:58 en collecte 3 op 23:59.
 
 ## Hoe te gebruiken
 1. Installeer uv (zie: https://docs.astral.sh/uv/getting-started/installation/)
@@ -25,3 +25,4 @@ Dit stuk code maakt een Scipio csv bestand. Als input leest hij de excel in van 
 3. Zet het collecterooster in de map: input
 4. Draai main.py (uv run main.py)
 5. Resultaten staan in output map
+
