@@ -5,36 +5,36 @@ import numpy as np
 from typing import List
 
 @dataclass
-class CollectionItem:
+class CollecteItem:
     index: int | None
-    charity: str
+    doel: str
 
-    def ToString(self) -> str:
+    def MaakNaam(self) -> str:
         if (self.index is not None):
-            return f"Col-{self.index}: {self.charity}"
+            return f"Col-{self.index}: {self.doel}"
         else:
-            return self.charity
+            return self.doel
 
 @dataclass
-class CollectionPerDay:
-    date: pd.Timestamp
-    special: str
-    collections: list[CollectionItem]
+class CollectesPerDag:
+    datum: pd.Timestamp
+    bijzonderheden: str
+    collectes: list[CollecteItem]
 
 
-def collection_per_day_to_df(data: list[CollectionPerDay]) -> pd.DataFrame:
+def collectesPerDagNaarDataframe(data: list[CollectesPerDag]) -> pd.DataFrame:
     # Determine max number of collections
-    max_collections = max(len(d.collections) for d in data)
+    max_collections = max(len(d.collectes) for d in data)
 
     rows = []
     for d in data:
         row = {
-            "Datum": d.date,
-            "Bijzonderheden": d.special,
+            "Datum": d.datum,
+            "Bijzonderheden": d.bijzonderheden,
         }
 
         # Convert collections using ToString()
-        collection_strings = [c.ToString() for c in d.collections]
+        collection_strings = [c.MaakNaam() for c in d.collectes]
 
         # Fill dynamic collection columns
         for i in range(max_collections):
@@ -65,26 +65,26 @@ def bepaalCollectes2025() -> List[tuple[str, pd.DataFrame]]:
         church_df.rename(columns={churchHeaders[0]: "1", churchHeaders[1]: "2", churchHeaders[2]: "3"}, inplace=True)
         dates = church_df.index.unique()
 
-        collections: List[CollectionPerDay] = []
+        collections: List[CollectesPerDag] = []
         for data in dates:
             church_data_df = church_df.loc[data]
 
-            collectionPerDay: CollectionPerDay = CollectionPerDay(data, "", [])
+            collectionPerDay: CollectesPerDag = CollectesPerDag(data, "", [])
             def AddCollectionForItem(object):
                 for i in range(1, 4):
                     item = object[str(i)]
                     if (item == item):  # not NaN
-                        collectionPerDay.collections.append(CollectionItem(i, item))
+                        collectionPerDay.collectes.append(CollecteItem(i, item))
 
             if (isinstance(church_data_df, pd.Series)): # only one row for this data
                 specialItem = church_data_df["Bijzonderheden"]
                 if (specialItem == specialItem):  # not NaN
-                    collectionPerDay.special = specialItem
+                    collectionPerDay.bijzonderheden = specialItem
                 AddCollectionForItem(church_data_df)
             else: # multiple rows for this date
                 specialItems = church_data_df["Bijzonderheden"].dropna().values
                 if (len(specialItems) > 0):
-                    collectionPerDay.special = "| ".join(specialItems)
+                    collectionPerDay.bijzonderheden = "| ".join(specialItems)
                 
                 fistRow = True
                 for row, data_row in church_data_df.iterrows():
@@ -96,15 +96,15 @@ def bepaalCollectes2025() -> List[tuple[str, pd.DataFrame]]:
                         for i in range(1, 4):
                             item = data_row[str(i)]
                             if (item == item):  # not NaN
-                                if item not in [collection.charity for collection in collectionPerDay.collections]:
-                                    newItems.append(CollectionItem(i, item))
+                                if item not in [collection.doel for collection in collectionPerDay.collectes]:
+                                    newItems.append(CollecteItem(i, item))
                         if (len(newItems) == 1):
-                            collectionPerDay.collections.append(CollectionItem(None, newItems[0].charity))
+                            collectionPerDay.collectes.append(CollecteItem(None, newItems[0].charity))
                         else:
                             for newItem in newItems:
-                                collectionPerDay.collections.append(newItem)
+                                collectionPerDay.collectes.append(newItem)
             collections.append(collectionPerDay)
-        results.append((church, collection_per_day_to_df(collections)))
+        results.append((church, collectesPerDagNaarDataframe(collections)))
     return results
 
 
