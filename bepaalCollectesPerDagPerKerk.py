@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 from typing import List
+from helpers import kerken
 
 @dataclass
 class CollecteItem:
@@ -47,8 +48,7 @@ def collectesPerDagNaarDataframe(data: list[CollectesPerDag]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 def bepaalCollectes2025() -> List[tuple[str, pd.DataFrame]]:
-    churches = ["BK", "OH", "WK"]
-    churchesHeaders = [f"{church}_{i}" for church in churches for i in range(1, 4)]
+    churchesHeaders = [f"{church}_{i}" for church in kerken for i in range(1, 4)]
     xls = pd.ExcelFile(r"input/Collecterooster_PGK_2026___Definitief_12-11-2025.xlsx")
     df = xls.parse(sheet_name="Collectes 2026 A4 per kerk", index_col=0, skiprows=2, nrows=82, names=["Datum", "Bijzonderheden"] + churchesHeaders)
     df.index  = df.index.to_series().ffill()
@@ -58,8 +58,8 @@ def bepaalCollectes2025() -> List[tuple[str, pd.DataFrame]]:
 
     results: List[tuple[str, pd.DataFrame]] = []
 
-    for church in churches:
-        churchHeaders = [f"{church}_{i}" for i in range(1, 4)]
+    for kerk in kerken:
+        churchHeaders = [f"{kerk}_{i}" for i in range(1, 4)]
         church_df = df[["Bijzonderheden"] + churchHeaders]
         church_df.dropna(inplace=True, how="all", subset=churchHeaders)
         church_df.rename(columns={churchHeaders[0]: "1", churchHeaders[1]: "2", churchHeaders[2]: "3"}, inplace=True)
@@ -99,19 +99,21 @@ def bepaalCollectes2025() -> List[tuple[str, pd.DataFrame]]:
                                 if item not in [collection.doel for collection in collectionPerDay.collectes]:
                                     newItems.append(CollecteItem(i, item))
                         if (len(newItems) == 1):
-                            collectionPerDay.collectes.append(CollecteItem(None, newItems[0].charity))
+                            collectionPerDay.collectes.append(CollecteItem(None, newItems[0].doel))
                         else:
                             for newItem in newItems:
                                 collectionPerDay.collectes.append(newItem)
             collections.append(collectionPerDay)
-        results.append((church, collectesPerDagNaarDataframe(collections)))
+        results.append((kerk, collectesPerDagNaarDataframe(collections)))
     return results
 
 
 if __name__ == "__main__":
     results = bepaalCollectes2025()
 
-    for church, df in results:
-        df.to_excel(Path(f"output/2025_{church}_collectes_per_dag.xlsx"), index=False)
+    from helpers import BepaalOutputBestandCollectPerDag
+
+    for kerk, df in results:
+        df.to_excel(BepaalOutputBestandCollectPerDag(kerk), index=False)
 
     
