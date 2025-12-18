@@ -5,6 +5,8 @@ import numpy as np
 from typing import List
 from helpers import kerken, BepaalOutputBestandCollectPerDag
 
+pd.options.mode.chained_assignment = None  # default='warn'
+
 @dataclass
 class CollecteItem:
     index: int | None
@@ -72,36 +74,24 @@ def bepaalCollectes2025():
                 for i in range(1, 4):
                     item = object[str(i)]
                     if (item == item):  # not NaN
-                        collectionPerDay.collectes.append(CollecteItem(i, item))
+                        if item not in [collection.doel for collection in collectionPerDay.collectes]:
+                            collectionPerDay.collectes.append(CollecteItem(i, item))
 
             if (isinstance(church_data_df, pd.Series)): # only one row for this data
                 specialItem = church_data_df["Bijzonderheden"]
                 if (specialItem == specialItem):  # not NaN
                     collectionPerDay.bijzonderheden = specialItem
                 AddCollectionForItem(church_data_df)
+
             else: # multiple rows for this date
                 specialItems = church_data_df["Bijzonderheden"].dropna().values
                 if (len(specialItems) > 0):
                     collectionPerDay.bijzonderheden = "| ".join(specialItems)
-                
-                fistRow = True
                 for row, data_row in church_data_df.iterrows():
-                    if (fistRow):
-                        AddCollectionForItem(data_row)
-                        fistRow = False
-                    else:
-                        newItems = []    
-                        for i in range(1, 4):
-                            item = data_row[str(i)]
-                            if (item == item):  # not NaN
-                                if item not in [collection.doel for collection in collectionPerDay.collectes]:
-                                    newItems.append(CollecteItem(i, item))
-                        if (len(newItems) == 1):
-                            collectionPerDay.collectes.append(CollecteItem(None, newItems[0].doel))
-                        else:
-                            for newItem in newItems:
-                                collectionPerDay.collectes.append(newItem)
+                    AddCollectionForItem(data_row)
+
             collections.append(collectionPerDay)
+
         df_resultaat = collectesPerDagNaarDataframe(collections)
         df_resultaat.to_excel(BepaalOutputBestandCollectPerDag(kerk), index=False)
 
