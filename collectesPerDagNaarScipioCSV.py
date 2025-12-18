@@ -15,11 +15,19 @@ def collectes_per_dag_naar_scipio_csv(inputBestand: Path, outputBestand: Path):
 
     looptijden : List[CollecteLoopTijd] = []
     for _, data_row in input_df.iterrows():
-        dag = data_row["Datum"].to_pydatetime().date()
+        dag : datetime.date = data_row["Datum"].to_pydatetime().date()
+        vanaf = datetime.datetime.combine(dag, datetime.time(0,0)) - datetime.timedelta(days=2) #bij voorkeur 2 dagen van tevoren
+        tot = datetime.datetime.combine(dag, datetime.time(23,59)) + datetime.timedelta(days=4) #bij voorkeur tot 4 dagen erna
+
+        if (dag.month == 1 and dag.day == 1): #Nieuwjaarsdag
+            vanaf = datetime.datetime.combine(dag, datetime.time(0,0))
+        if (dag.month == 12 and dag.day == 31): #Oudjaarsdag
+            tot = datetime.datetime.combine(dag, datetime.time(23,59))
+
         looptijden.append(CollecteLoopTijd(
             dag,
-            datetime.datetime.combine(dag, datetime.time(0,0)) - datetime.timedelta(days=2), #bij voorkeur 2 dagen van tevoren
-            datetime.datetime.combine(dag, datetime.time(23,59)) + datetime.timedelta(days=4) #bij voorkeur tot 4 dagen erna
+            vanaf,
+            tot
             ))
 
     for i in range(1, len(looptijden)):
